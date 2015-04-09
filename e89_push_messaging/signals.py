@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from django.db.models.signals import pre_delete,post_save
 from django.dispatch.dispatcher import receiver
 from django.db.models import get_model
+from django.db.models.query import QuerySet
 from django.conf import settings
 import e89_push_messaging.push_tools
 import sys
@@ -26,7 +27,10 @@ def notify_owner(sender,instance,**kwargs):
 	owners = []
 	if owner_attr:
 		owner = e89_push_messaging.push_tools.deepgetattr(instance,owner_attr)
-		owners = [owner]
+		if type(owner) != type([]) and not isinstance(owner, QuerySet):
+			owners = [owner]
+		else:
+			owners = owner
 	else:
 		# Owner não especificado. Envia push para todos as instâncias da classe PUSH_DEVICE_OWNER_MODEL
 		owner_app,owner_model = settings.PUSH_DEVICE_OWNER_MODEL.split('.')
@@ -35,10 +39,11 @@ def notify_owner(sender,instance,**kwargs):
 
 	try:
 		exclude_reg_ids = instance.get_exclude_notify()
+		include_reg_ids = instance.get_include_notify()
 	except AttributeError:
 		exclude_reg_ids = []
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
-	e89_push_messaging.push_tools.send_message(owners,exclude_reg_ids)
+	e89_push_messaging.push_tools.send_message(owners,exclude_reg_ids,include_reg_ids)
 
 for app_model in settings.PUSH_MODELS.keys():
 	app,str_model = app_model.split('.')

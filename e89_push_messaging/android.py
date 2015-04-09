@@ -8,11 +8,19 @@ import logging
 import sys
 import e89_push_messaging.push_tools
 
-def send_message_android(owners, exclude_reg_ids=[], data_dict = {}, collapse_key="update"):
+def send_message_android(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {}, collapse_key="update"):
 
     # Looking for devices
     Device = get_model("e89_push_messaging", "Device")
-    devices = Device.objects.filter(Q(owner__in=owners),Q(platform="android"),~Q(registration_id__in=exclude_reg_ids))
+
+    # Verifying if owner id's were passed instead of reg id's
+    if exclude_reg_ids and type(exclude_reg_ids[0]) == type(1):
+        exclude_reg_ids = Device.objects.filter(owner_id__in=exclude_reg_ids).values_list('registration_id',flat=True)
+
+    if include_reg_ids and type(include_reg_ids[0]) == type(1):
+        include_reg_ids = Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True)
+
+    devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="android"),~Q(registration_id__in=exclude_reg_ids))
     registration_ids = list(devices.values_list("registration_id",flat=True))
 
     e89_push_messaging.push_tools.print_console("Sending message GCM to reg_ids: " + ",".join([r for r in registration_ids]))
