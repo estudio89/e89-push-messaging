@@ -42,6 +42,7 @@ def notify_owner(sender,instance,**kwargs):
 		include_reg_ids = instance.get_include_notify()
 	except AttributeError:
 		exclude_reg_ids = []
+		include_reg_ids = []
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
 	e89_push_messaging.push_tools.send_message(owners,exclude_reg_ids,include_reg_ids)
 
