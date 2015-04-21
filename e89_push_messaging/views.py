@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
 from django.conf import settings
-from django.db.models import get_model
+from django.apps import apps
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -30,7 +30,7 @@ def register_device(request):
         json_identifier = settings.PUSH_DEVICE_OWNER_IDENTIFIER.split('__')[-1]
         kwargs =  {settings.PUSH_DEVICE_OWNER_IDENTIFIER:json_obj[json_identifier]}
         app,model = settings.PUSH_DEVICE_OWNER_MODEL.split('.')
-        Owner = get_model(app, model)
+        Owner = apps.get_model(app, model)
 
         owner = get_object_or_404(Owner,**kwargs)
         e89_push_messaging.push_tools.register_device(owner, registration_id, platform)

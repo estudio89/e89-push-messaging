@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import get_model,Q
+from django.db.models import Q
+from django.apps import apps
 import urllib2,json,time
 import datetime as dt
 import logging
@@ -11,7 +12,7 @@ import e89_push_messaging.push_tools
 def send_message_android(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {}, collapse_key="update"):
 
     # Looking for devices
-    Device = get_model("e89_push_messaging", "Device")
+    Device = apps.get_model("e89_push_messaging", "Device")
 
     # Verifying if owner id's were passed instead of reg id's
     if exclude_reg_ids and type(exclude_reg_ids[0]) == type(1):
@@ -82,7 +83,7 @@ def _check_errors(response,registration_ids):
     json_response = response.read()
     json_response = json.loads(json_response)
     if json_response["failure"] != 0:
-        Device = get_model("e89_push_messaging", "Device")
+        Device = apps.get_model("e89_push_messaging", "Device")
         devices = Device.objects.filter(registration_id__in=registration_ids)
         logger = logging.getLogger("sentry")
 

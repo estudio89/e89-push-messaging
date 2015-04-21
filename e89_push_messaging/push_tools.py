@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.utils import timezone
-from django.db.models import get_model
+from django.apps import apps
 import urllib2,json,time
 import datetime as dt
 import logging
@@ -16,7 +16,7 @@ def send_message(owners, exclude_reg_ids=[], include_reg_ids=[],data_dict = {'ty
     print_console("Enviando mensagem push para: " + ", ".join([str(o) for o in owners]))
 
 def register_device(owner,registration_id, platform):
-    Device = get_model("e89_push_messaging", "Device")
+    Device = apps.get_model("e89_push_messaging", "Device")
     try:
     	device = Device.objects.get(registration_id=registration_id,platform=platform)
     except Device.DoesNotExist:

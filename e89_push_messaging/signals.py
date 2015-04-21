@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from django.db.models.signals import pre_delete,post_save
 from django.dispatch.dispatcher import receiver
-from django.db.models import get_model
+from django.apps import apps
 from django.db.models.query import QuerySet
 from django.conf import settings
 import e89_push_messaging.push_tools
@@ -34,7 +34,7 @@ def notify_owner(sender,instance,**kwargs):
 	else:
 		# Owner não especificado. Envia push para todos as instâncias da classe PUSH_DEVICE_OWNER_MODEL
 		owner_app,owner_model = settings.PUSH_DEVICE_OWNER_MODEL.split('.')
-		owner_model = get_model(owner_app,owner_model)
+		owner_model = apps.get_model(owner_app,owner_model)
 		owners = owner_model.objects.filter(device__isnull=False)
 
 	try:
@@ -48,7 +48,7 @@ def notify_owner(sender,instance,**kwargs):
 
 for app_model in settings.PUSH_MODELS.keys():
 	app,str_model = app_model.split('.')
-	model = get_model(app,str_model)
+	model = apps.get_model(app,str_model)
 	assert model is not None, "Model %s nao encontrado. Confira a sintaxe na opcao PUSH_MODELS."%app_model
 
 	for signal in [pre_delete,post_save]:
