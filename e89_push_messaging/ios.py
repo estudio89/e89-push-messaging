@@ -22,7 +22,7 @@ def send_message_ios(owners, data_dict={'type':'update'}, exclude_reg_ids=[], in
     if include_reg_ids and type(include_reg_ids[0]) == type(1):
         include_reg_ids = Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True)
 
-    devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="ios"),~Q(registration_id__in=exclude_reg_ids))
+    devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="ios"),~Q(registration_id__in=exclude_reg_ids)).distinct()
     registration_ids = list(devices.values_list("registration_id",flat=True))
 
     e89_push_messaging.push_tools.print_console("Sending message APNS to reg_ids: " + ",".join([r for r in registration_ids]))

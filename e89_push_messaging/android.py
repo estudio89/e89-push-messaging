@@ -21,7 +21,7 @@ def send_message_android(owners, exclude_reg_ids=[], include_reg_ids=[], data_di
     if include_reg_ids and type(include_reg_ids[0]) == type(1):
         include_reg_ids = Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True)
 
-    devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="android"),~Q(registration_id__in=exclude_reg_ids))
+    devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="android"),~Q(registration_id__in=exclude_reg_ids)).distinct()
 
     registration_ids = list(devices.values_list("registration_id",flat=True))
 
