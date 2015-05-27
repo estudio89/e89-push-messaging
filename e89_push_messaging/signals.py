@@ -8,21 +8,18 @@ from django.conf import settings
 import e89_push_messaging.push_tools
 import sys
 
-def notify_owner(sender,instance,**kwargs):
 
+def should_send_push(instance):
 	# Verificando se é necessário o envio de push
 	notify = getattr(instance, "notify", True)
 	if not notify:
 		if hasattr(instance, "notify"):
 			instance.notify = True
 		e89_push_messaging.push_tools.print_console('PUSH nao enviado.')
-		return
+		return False
+	return True
 
-	# Buscando parâmetro do sender que representa o owner
-	app = sender._meta.app_label
-	model = sender.__name__
-	owner_attr = settings.PUSH_MODELS[app+"."+model]
-
+def get_owners(instance, owner_attr):
 	# Buscando owner
 	owners = []
 	if owner_attr:
@@ -37,6 +34,22 @@ def notify_owner(sender,instance,**kwargs):
 		owner_model = apps.get_model(owner_app,owner_model)
 		owners = owner_model.objects.filter(device__isnull=False)
 
+	return owners
+
+def notify_owner(sender,instance,**kwargs):
+	if not should_send_push(instance):
+		return
+
+	# Buscando parâmetro do sender que representa o owner
+	app = sender._meta.app_label
+	model = sender.__name__
+	app_model = app+"."+model
+	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
+	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
+
+	# Buscando owner
+	owners = get_owners(instance, owner_attr)
+
 	try:
 		exclude_reg_ids = instance.get_exclude_notify()
 		include_reg_ids = instance.get_include_notify()
@@ -44,11 +57,12 @@ def notify_owner(sender,instance,**kwargs):
 		exclude_reg_ids = []
 		include_reg_ids = []
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
-	e89_push_messaging.push_tools.send_message(owners,exclude_reg_ids,include_reg_ids)
+	e89_push_messaging.push_tools.send_message(owners, exclude_reg_ids,include_reg_ids, payload_alert=payload_alert)
+
+
 
 for app_model in settings.PUSH_MODELS.keys():
-	app,str_model = app_model.split('.')
-	model = apps.get_model(app,str_model)
+	model = apps.get_model(app_model)
 	assert model is not None, "Model %s nao encontrado. Confira a sintaxe na opcao PUSH_MODELS."%app_model
 
 	for signal in [pre_delete,post_save]:

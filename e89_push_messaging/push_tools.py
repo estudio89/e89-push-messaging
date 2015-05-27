@@ -9,18 +9,18 @@ import sys
 import e89_push_messaging.android
 import e89_push_messaging.ios
 
-def send_message(owners, exclude_reg_ids=[], include_reg_ids=[],data_dict = {'type':'update'}, collapse_key="update"):
-    e89_push_messaging.android.send_message_android(owners, exclude_reg_ids = exclude_reg_ids,include_reg_ids = include_reg_ids, data_dict = data_dict, collapse_key="update")
-    e89_push_messaging.ios.send_message_ios(owners, exclude_reg_ids = exclude_reg_ids, include_reg_ids = include_reg_ids, data_dict = data_dict)
+def send_message(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {'type':'update'}, payload_alert=None, collapse_key="update"):
+    e89_push_messaging.android.send_message_android(owners, exclude_reg_ids = exclude_reg_ids,include_reg_ids = include_reg_ids, data_dict = data_dict, collapse_key=collapse_key)
+    e89_push_messaging.ios.send_message_ios(owners, exclude_reg_ids = exclude_reg_ids, include_reg_ids = include_reg_ids, data_dict = data_dict, payload_alert = payload_alert)
 
     print_console("Enviando mensagem push para: " + ", ".join([str(o) for o in owners]))
 
 def register_device(owner,registration_id, platform):
     Device = apps.get_model("e89_push_messaging", "Device")
     try:
-    	device = Device.objects.get(registration_id=registration_id,platform=platform)
+    	device = Device.objects.get(registration_id=registration_id, platform=platform)
     except Device.DoesNotExist:
-    	device = Device(registration_id=registration_id,platform=platform)
+    	device = Device(registration_id=registration_id, platform=platform)
     device.owner = owner
     device.save()
 

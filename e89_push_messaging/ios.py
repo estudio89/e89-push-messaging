@@ -10,7 +10,7 @@ import sys
 from apns import APNs, Frame, Payload
 import e89_push_messaging.push_tools
 
-def send_message_ios(owners, data_dict={'type':'update'}, exclude_reg_ids=[], include_reg_ids=[]):
+def send_message_ios(owners, data_dict={'type':'update'}, payload_alert=None, exclude_reg_ids=[], include_reg_ids=[]):
 
 	# Looking for devices
     Device = apps.get_model("e89_push_messaging", "Device")
@@ -36,7 +36,13 @@ def send_message_ios(owners, data_dict={'type':'update'}, exclude_reg_ids=[], in
     else:
     	apns = APNs(use_sandbox=False, cert_file=settings.APNS_PROD_CERTIFICATE, key_file=settings.APNS_PROD_KEY)
 
-    payload = Payload(custom=data_dict)
+    sound = None
+    badge = None
+    if payload_alert:
+        sound = "default"
+        badge = 1
+
+    payload = Payload(alert=payload_alert, badge=badge, custom=data_dict)
     frame = Frame()
     for idx,registration_id in enumerate(registration_ids):
     	frame.add_item(token_hex=registration_id, payload=payload, identifier=idx,

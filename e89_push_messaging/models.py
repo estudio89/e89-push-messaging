@@ -8,5 +8,8 @@ class Device(models.Model):
 	registration_id = models.CharField(max_length = 500)
 	platform = models.CharField(max_length=30,choices=PLATFORM_CHOICES)
 
+	class Meta:
+		unique_together = (("registration_id", "platform"),)
+
 	def __unicode__(self):
 		return '%s: %s'%(self.platform,self.registration_id)
