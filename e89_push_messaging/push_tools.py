@@ -36,3 +36,4 @@ def print_console(msg):
         sys.stderr.write(msg + '\n')
     except UnicodeError:
         pass
+
