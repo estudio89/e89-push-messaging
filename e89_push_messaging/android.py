@@ -78,7 +78,7 @@ def _check_errors(response,registration_ids):
     if (response.code == 400):
         raise AssertionError("Message could not be delivered to registration ids %s because the request could not be parsed as JSON. Values: %s."%(",".join(registration_ids)), str(values))
     elif (response.code == 401):
-        raise AssertionError("Message could not be delivered to registration ids %s because there was an error authenticating the sender account. Check %s."%(",".join(registration_ids), "https://developer.android.com/google/gcm/http.html#auth_error"))
+        raise AssertionError("Message could not be delivered to registration ids %s because there was an error authenticating the sender account. Check %s. Maybe your IP is not listed in the developer console?"%(",".join(registration_ids), "https://developer.android.com/google/gcm/http.html#auth_error"))
 
     json_response = response.read()
     json_response = json.loads(json_response)

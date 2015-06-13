@@ -17,12 +17,7 @@ def send_message(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {'t
 
 def register_device(owner,registration_id, platform):
     Device = apps.get_model("e89_push_messaging", "Device")
-    try:
-    	device = Device.objects.get(registration_id=registration_id, platform=platform)
-    except Device.DoesNotExist:
-    	device = Device(registration_id=registration_id, platform=platform)
-    device.owner = owner
-    device.save()
+    device = Device.objects.update_or_create(registration_id=registration_id, platform=platform, defaults={"owner":owner})
 
 def deepgetattr(obj, attr):
     """Recurses through an attribute chain to get the ultimate value."""

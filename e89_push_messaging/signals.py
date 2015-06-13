@@ -46,6 +46,7 @@ def notify_owner(sender,instance,**kwargs):
 	app_model = app+"."+model
 	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
+	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
 
 	# Buscando owner
 	owners = get_owners(instance, owner_attr)
@@ -57,7 +58,12 @@ def notify_owner(sender,instance,**kwargs):
 		exclude_reg_ids = []
 		include_reg_ids = []
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
-	e89_push_messaging.push_tools.send_message(owners, exclude_reg_ids,include_reg_ids, payload_alert=payload_alert)
+	e89_push_messaging.push_tools.send_message(owners = owners,
+		exclude_reg_ids = exclude_reg_ids,
+		include_reg_ids = include_reg_ids,
+		payload_alert=payload_alert,
+		data_dict={'type':'update','identifier':identifier},
+		collapse_key="update" if identifier is None else "update_" + identifier)
 
 
 
