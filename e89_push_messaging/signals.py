@@ -47,6 +47,8 @@ def notify_owner(sender,instance,**kwargs):
 	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
 	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
+	if instance.get_ignore_alert():
+		payload_alert = None
 
 	# Buscando owner
 	owners = get_owners(instance, owner_attr)

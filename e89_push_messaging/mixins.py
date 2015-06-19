@@ -11,6 +11,16 @@ class PushMixin(object):
 		''' Recebe uma lista de registration id's que não devem receber notificação push.'''
 		self.exclude_notify = list(registration_id_list)
 
+	def set_ignore_alert(self):
+		self.ignore_alert = True
+
+	def get_ignore_alert(self):
+		if not hasattr(self, 'ignore_alert'):
+			return False
+		ignore = self.ignore_alert
+		self.ignore_alert = False
+		return ignore
+
 	def get_include_notify(self):
 		if not hasattr(self, 'include_notify'):
 			return []
