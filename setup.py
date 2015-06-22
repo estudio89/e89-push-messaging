@@ -20,7 +20,7 @@ setup(
     url='http://www.estudio89.com.br/',
     author='Luccas Correa',
     author_email='luccascorrea@estudio89.com.br',
-    install_requires=['apns','e89_security'],
+    install_requires=['e89_security'],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

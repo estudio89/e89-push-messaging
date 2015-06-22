@@ -2,6 +2,7 @@ README.txt
 setup.py
 e89_push_messaging/__init__.py
 e89_push_messaging/android.py
+e89_push_messaging/apns.py
 e89_push_messaging/apps.py
 e89_push_messaging/ios.py
 e89_push_messaging/mixins.py
