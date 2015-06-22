@@ -36,7 +36,7 @@ def get_owners(instance, owner_attr):
 
 	return owners
 
-def notify_owner(sender,instance,**kwargs):
+def notify_owner(sender, instance, signal, **kwargs):
 	if not should_send_push(instance):
 		return
 
@@ -47,7 +47,7 @@ def notify_owner(sender,instance,**kwargs):
 	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
 	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
-	if instance.get_ignore_alert():
+	if instance.get_ignore_alert() or signal == pre_delete:
 		payload_alert = None
 
 	# Buscando owner
