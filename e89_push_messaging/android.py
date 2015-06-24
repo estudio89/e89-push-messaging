@@ -90,8 +90,11 @@ def _check_errors(response,registration_ids):
         errors = {}
         for result,device in zip(json_response["results"],devices):
             if result.get("error"):
-                errors[device.registration_id] = [result["error"],"owner_id: %d"%(device.owner.id)]
+                if result["error"] == "NotRegistered":
+                    device.delete() # user uninstalled app or got a new registration id
+                else:
+                    errors[device.registration_id] = [result["error"],"owner_id: %d"%(device.owner.id)]
 
-        logger.error( "It was not possible to process %s of %s GCM messages. Errors:%s"%( str(json_response["failure"]), str(len(registration_ids)), str(errors)) )
+        logger.warning( "It was not possible to process %s of %s GCM messages. Errors:%s"%( str(json_response["failure"]), str(len(registration_ids)), str(errors)) )
 
     return json_response["results"]

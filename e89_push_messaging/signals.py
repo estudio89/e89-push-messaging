@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from django.db.models.signals import pre_delete,post_save
+from django.db import transaction
+from django.core.signals import request_finished
 from django.dispatch.dispatcher import receiver
 from django.apps import apps
 from django.db.models.query import QuerySet
 from django.conf import settings
 import e89_push_messaging.push_tools
 import sys
-
+import threading
 
 def should_send_push(instance):
 	# Verificando se é necessário o envio de push
@@ -40,6 +42,11 @@ def notify_owner(sender, instance, signal, **kwargs):
 	if not should_send_push(instance):
 		return
 
+	if not transaction.get_autocommit():
+		# Code is being run inside a transaction. Add to queue
+		add_to_queue(sender, instance, signal)
+		return
+
 	# Buscando parâmetro do sender que representa o owner
 	app = sender._meta.app_label
 	model = sender.__name__
@@ -67,11 +74,40 @@ def notify_owner(sender, instance, signal, **kwargs):
 		data_dict={'type':'update','identifier':identifier},
 		collapse_key="update" if identifier is None else "update_" + identifier)
 
+data = threading.local()
+data.e89_push_queue = None
 
+def add_to_queue(sender, instance, signal=None, **kwargs):
+	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
+		data.e89_push_queue = set([])
 
-for app_model in settings.PUSH_MODELS.keys():
-	model = apps.get_model(app_model)
-	assert model is not None, "Model %s nao encontrado. Confira a sintaxe na opcao PUSH_MODELS."%app_model
+	data.e89_push_queue.add((sender, instance, signal))
+	return
 
-	for signal in [pre_delete,post_save]:
-		signal.connect(receiver=notify_owner,sender=model)
+def process_queue(sender, **kwargs):
+	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
+		return
+
+	for sender,instance,signal in data.e89_push_queue:
+		notify_owner(sender, instance, signal)
+	data.e89_push_queue = None
+
+def connect_signals():
+	# Connecting signals to model events
+	for app_model in settings.PUSH_MODELS.keys():
+		model = apps.get_model(app_model)
+		send_on_save = settings.PUSH_MODELS[app_model].get("send_on_save", True)
+
+		signals_list = [pre_delete]
+		if send_on_save:
+			signals_list.append(post_save)
+
+		assert model is not None, "Model %s nao encontrado. Confira a sintaxe na opcao PUSH_MODELS."%app_model
+
+		for signal in signals_list:
+			signal.connect(receiver=notify_owner,sender=model)
+
+	# Connecting signal to response sent event
+	request_finished.connect(process_queue)
+
+connect_signals()

@@ -45,3 +45,9 @@ class PushMixin(object):
 		if not hasattr(self, 'notify'):
 			return True
 		return self.notify
+
+	def notify_owners(self):
+		''' This method should never be used inside a transaction, or else if the push message arrives before the transaction is committed,
+			the user will not receive the correct data.'''
+		import e89_push_messaging.signals
+		e89_push_messaging.signals.notify_owner(self._meta.model, self, None)
