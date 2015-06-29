@@ -11,14 +11,13 @@ def send_message_websockets(owners, data_dict = {'type' : 'update'}):
 	else:
 		owners = [e89_push_messaging.push_tools.deepgetattr(owner, settings.PUSH_DEVICE_OWNER_IDENTIFIER) for owner in owners]
 
-	headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-	url = settings.PUSH_WEBSOCKET_URL
-
 	payload = {
 		"identifiers": list(owners),
 	}
-
 	payload.update(data_dict)
+	post_to_server(payload)
 
-	requests.post(url,data=json.dumps(payload), headers=headers)
-
+def post_to_server(data):
+	headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+	url = settings.PUSH_WEBSOCKET_URL
+	requests.post(url,data=json.dumps(data), headers=headers)
