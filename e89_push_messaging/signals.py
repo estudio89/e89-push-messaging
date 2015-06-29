@@ -8,6 +8,7 @@ from django.apps import apps
 from django.db.models.query import QuerySet
 from django.conf import settings
 import e89_push_messaging.push_tools
+from e89_push_messaging.push_sender import PushSender
 import sys
 import threading
 
@@ -67,7 +68,7 @@ def notify_owner(sender, instance, signal, **kwargs):
 		exclude_reg_ids = []
 		include_reg_ids = []
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
-	e89_push_messaging.push_tools.send_message(owners = owners,
+	PushSender().send(owners = owners,
 		exclude_reg_ids = exclude_reg_ids,
 		include_reg_ids = include_reg_ids,
 		payload_alert=payload_alert,

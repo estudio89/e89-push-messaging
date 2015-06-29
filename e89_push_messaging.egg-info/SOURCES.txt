@@ -7,6 +7,7 @@ e89_push_messaging/apps.py
 e89_push_messaging/ios.py
 e89_push_messaging/mixins.py
 e89_push_messaging/models.py
+e89_push_messaging/push_sender.py
 e89_push_messaging/push_tools.py
 e89_push_messaging/signals.py
 e89_push_messaging/urls.py
