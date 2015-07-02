@@ -94,7 +94,6 @@ class iOSPushSender(MobilePushSender):
 		badge = 1 if payload_alert else None
 		sound = "default" if payload_alert else None
 		payload = kwargs.pop("data_dict", {'type':'update'})
-		payload.update({"content-available":1})
 
 		if settings.DEBUG:
 			certFile = settings.APNS_DEV_CERTIFICATE
