@@ -39,11 +39,11 @@ def get_owners(instance, owner_attr):
 
 	return owners
 
-def notify_owner(sender, instance, signal, **kwargs):
+def notify_owner(sender, instance, signal, queue=True, **kwargs):
 	if not should_send_push(instance):
 		return
 
-	if not transaction.get_autocommit():
+	if queue:
 		# Code is being run inside a transaction. Add to queue
 		add_to_queue(sender, instance, signal)
 		return
@@ -90,7 +90,7 @@ def process_queue(sender, **kwargs):
 		return
 
 	for sender,instance,signal in data.e89_push_queue:
-		notify_owner(sender, instance, signal)
+		notify_owner(sender, instance, signal, queue=False)
 	data.e89_push_queue = None
 
 def connect_signals():
