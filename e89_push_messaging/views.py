@@ -26,6 +26,7 @@ def register_device(request):
 
     json_obj = e89_security.tools._get_user_data(request, getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), getattr(settings, "SYNC_ENCRYPTION", False))
 
+    old_registration_id = json_obj.get('old_registration_id')
     registration_id = json_obj['registration_id']
     platform = json_obj['platform']
 
@@ -34,6 +35,6 @@ def register_device(request):
     json_identifier = settings.PUSH_DEVICE_OWNER_IDENTIFIER.split('__')[-1]
     kwargs =  {settings.PUSH_DEVICE_OWNER_IDENTIFIER:json_obj[json_identifier]}
     owner = get_object_or_404(Owner,**kwargs)
-    e89_push_messaging.push_tools.register_device(owner, registration_id, platform)
+    e89_push_messaging.push_tools.register_device(owner, registration_id, old_registration_id, platform)
 
     return e89_security.tools._generate_user_response({}, getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), getattr(settings, "SYNC_ENCRYPTION", False))

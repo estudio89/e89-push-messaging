@@ -16,9 +16,11 @@ def send_message(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {'t
     e89_push_messaging.websockets.send_message_websockets(owners, data_dict = data_dict)
     print_console("Enviando mensagem push para: " + ", ".join([str(o) for o in owners]))
 
-def register_device(owner,registration_id, platform):
+def register_device(owner, registration_id, old_registration_id, platform):
     Device = apps.get_model("e89_push_messaging", "Device")
-    device = Device.objects.update_or_create(registration_id=registration_id, platform=platform, defaults={"owner":owner})
+    if not old_registration_id:
+        old_registration_id = registration_id
+    device = Device.objects.update_or_create(registration_id=old_registration_id, platform=platform, defaults={"owner":owner, "registration_id":registration_id})
 
 def deepgetattr(obj, attr):
     """Recurses through an attribute chain to get the ultimate value."""
