@@ -136,14 +136,20 @@ class WSPushSender(AbstractPushSender):
 	def _get_url(self):
 		return (settings.PUSH_SERVER_URL + '/push/send/ws/').replace('//push', '/push')
 
-	def _get_identifiers(self, owners, **kwargs):
-		if len(owners) == 0:
+	def _get_identifiers(self, owners, exclude_reg_ids=[], include_reg_ids=[], **kwargs):
+
+		if len(owners) == 0 and len(include_reg_ids) == 0:
 			return []
 
 		if type(owners[0]) == type(1):
 			OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
-			identifiers = OwnerModel.objects.filter(id__in=owners).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
+
+			identifiers = OwnerModel.objects.filter(id__in=owners + include_reg_ids).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
 		else:
+			if len(include_reg_ids) > 0:
+				OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
+				more_owners = OwnerModel.objects.filter(id__in=include_reg_ids)
+				owners += list(more_owners)
 			identifiers = [e89_push_messaging.push_tools.deepgetattr(owner, settings.PUSH_DEVICE_OWNER_IDENTIFIER) for owner in owners]
 
 		return identifiers

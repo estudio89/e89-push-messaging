@@ -126,17 +126,47 @@ Para funcionamento correto, as seguintes opções devem ser definidas no arquivo
 
     	{
     		...
-    		"<app>.<model>":"<device_owner>",
+    		"<app>.<model>":{
+    			"owner_attr": "get_owners",
+    			"payload_alert": "New item!",
+    			"identifier": "identifier",
+    			"send_on_save": true
+    		},
     		...
     	}
 
-    	O valor <device_owner> indica qual o atributo do model que representa o owner do device. Esse valor é utilizado para saber qual usuário deve ser notificado quando uma instância desse model é alterada. Caso esse valor seja uma string vazia, todos os usuários serão notificados quando uma alteração ocorrer.
+    	- owner_attr: indica qual o atributo do model que representa o owner do device. Esse valor é utilizado para saber qual usuário deve ser notificado quando uma instância desse model é alterada. Caso esse valor seja uma string vazia, todos os usuários serão notificados quando uma alteração ocorrer. Esse valor poderá ser uma função, a qual deverá retornar instâncias dos owners.
+    	- payload_alert: mensagem de notificação enviada junto ao push. Utilizada para envio para iOS.
+    	- identifier: identifier utilizado na notificação do device. Utilizado para que o device saiba qual tipo de notificação recebeu.
+    	- send_on_save: booleano que indica se a notificação deve ser gerada automaticamente sempre que o device for salvo. Default: true. Caso seja especificado false, notificações só serão enviadas quando o método "notify_owners" do objeto for chamado.
 
 
-    	Ex: PUSH_MODELS = [
-	                {"model":"accounts.Registro","device_owner":"autor"},
-	                {"model":"accounts.EmpresaProfissional","device_owner":"profissional__user"}
-	        ]
+    	Ex: PUSH_MODELS = {
+
+			    "news.News":{
+			        "owner_attr":"_get_audience",
+			        "payload_alert": u"Uma nova notícia foi publicada!",
+			        "identifier":"news",
+			        "send_on_save":False
+			    },
+
+			    "bulletins.Bulletin":{
+			        "owner_attr":"_get_audience",
+			        "payload_alert": u"Um novo comunicado foi publicado!",
+			        "identifier":"bulletins"
+			    },
+
+			    "surveys.SurveyToDelete":{
+			        "owner_attr":"user_employee",
+			        "identifier":"surveys_deleted"
+			    },
+
+			    "messaging.Conversation":{
+			        "owner_attr":"get_members",
+			        "identifier": "conversations",
+			        "payload_alert": u"Você recebeu uma nova mensagem!"
+			    }
+			}
 
 
 ------------------------------------------------------------------------------------------------------------------------

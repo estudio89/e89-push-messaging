@@ -43,23 +43,24 @@ def notify_owner(sender, instance, signal, queue=True, **kwargs):
 	if not should_send_push(instance):
 		return
 
-	if queue:
-		# Code is being run inside a transaction. Add to queue
-		add_to_queue(sender, instance, signal)
-		return
-
-	# Buscando parâmetro do sender que representa o owner
 	app = sender._meta.app_label
 	model = sender.__name__
 	app_model = app+"."+model
 	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
+
+	if queue:
+		# Code is being run inside a transaction. Add to queue
+		add_to_queue(sender, instance, signal, owners=get_owners(instance, owner_attr))
+		return
+
+	# Buscando parâmetro do sender que representa o owner
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
 	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
 	if instance.get_ignore_alert() or signal == pre_delete:
 		payload_alert = None
 
 	# Buscando owner
-	owners = get_owners(instance, owner_attr)
+	owners = kwargs.get("owners", get_owners(instance, owner_attr))
 
 	try:
 		exclude_reg_ids = instance.get_exclude_notify()
@@ -67,6 +68,7 @@ def notify_owner(sender, instance, signal, queue=True, **kwargs):
 	except AttributeError:
 		exclude_reg_ids = []
 		include_reg_ids = []
+
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
 	PushSender().send(owners = owners,
 		exclude_reg_ids = exclude_reg_ids,
@@ -78,19 +80,19 @@ def notify_owner(sender, instance, signal, queue=True, **kwargs):
 data = threading.local()
 data.e89_push_queue = None
 
-def add_to_queue(sender, instance, signal=None, **kwargs):
+def add_to_queue(sender, instance, signal=None, owners=[], **kwargs):
 	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
 		data.e89_push_queue = set([])
 
-	data.e89_push_queue.add((sender, instance, signal))
+	data.e89_push_queue.add((sender, instance, signal, tuple(owners)))
 	return
 
 def process_queue(sender, **kwargs):
 	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
 		return
 
-	for sender,instance,signal in data.e89_push_queue:
-		notify_owner(sender, instance, signal, queue=False)
+	for sender,instance,signal,owners in data.e89_push_queue:
+		notify_owner(sender, instance, signal, queue=False, owners=owners)
 	data.e89_push_queue = None
 
 def connect_signals():
