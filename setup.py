@@ -11,7 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='e89-push-messaging',
-    version='1.0.1',
+    version='1.0.2',
     packages=['e89_push_messaging'],
     include_package_data=True,
     license='BSD License',  # example license
@@ -20,7 +20,7 @@ setup(
     url='http://www.estudio89.com.br/',
     author='Luccas Correa',
     author_email='luccascorrea@estudio89.com.br',
-    install_requires=['e89_security'],
+    install_requires=['e89_security>=1.0.1'],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

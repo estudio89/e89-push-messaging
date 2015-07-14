@@ -1,1 +1,1 @@
-e89_security
+e89_security>=1.0.1
