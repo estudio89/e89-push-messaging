@@ -87,7 +87,7 @@ class iOSPushSender(MobilePushSender):
 		return "ios"
 
 	def _get_url(self):
-		return (settings.PUSH_SERVER_URL + '/push/send/apns/').replace('//push', '/push')
+		return (settings.PUSH_SERVER_INTERNAL_URL + '/push/send/apns/').replace('//push', '/push')
 
 	def _get_data(self, **kwargs):
 		payload_alert = kwargs.pop("payload_alert", None)
@@ -119,7 +119,7 @@ class AndroidPushSender(MobilePushSender):
 		return "android"
 
 	def _get_url(self):
-		return (settings.PUSH_SERVER_URL + '/push/send/gcm/').replace('//push', '/push')
+		return (settings.PUSH_SERVER_INTERNAL_URL + '/push/send/gcm/').replace('//push', '/push')
 
 	def _get_data(self, **kwargs):
 		payload = kwargs.pop("data_dict", {'type':'update'})
@@ -134,7 +134,7 @@ class AndroidPushSender(MobilePushSender):
 class WSPushSender(AbstractPushSender):
 
 	def _get_url(self):
-		return (settings.PUSH_SERVER_URL + '/push/send/ws/').replace('//push', '/push')
+		return (settings.PUSH_SERVER_INTERNAL_URL + '/push/send/ws/').replace('//push', '/push')
 
 	def _get_identifiers(self, owners, exclude_reg_ids=[], include_reg_ids=[], **kwargs):
 
