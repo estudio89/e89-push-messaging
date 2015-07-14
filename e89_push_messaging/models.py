@@ -5,7 +5,7 @@ from django.conf import settings
 class Device(models.Model):
 	PLATFORM_CHOICES = (("ios","iOS"),("android","Android"))
 	owner = models.ForeignKey(settings.PUSH_DEVICE_OWNER_MODEL)
-	registration_id = models.CharField(max_length = 500)
+	registration_id = models.CharField(max_length = 200)
 	platform = models.CharField(max_length=30,choices=PLATFORM_CHOICES)
 
 	class Meta:
