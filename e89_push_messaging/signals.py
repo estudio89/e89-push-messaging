@@ -39,7 +39,7 @@ def get_owners(instance, owner_attr):
 
 	return owners
 
-def notify_owner(sender, instance, signal, queue=True, **kwargs):
+def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 	if not should_send_push(instance):
 		return
 
@@ -48,7 +48,7 @@ def notify_owner(sender, instance, signal, queue=True, **kwargs):
 	app_model = app+"."+model
 	owner_attr = settings.PUSH_MODELS[app_model]["owner_attr"]
 
-	if queue:
+	if queue and not testing:
 		# Code is being run inside a transaction. Add to queue
 		add_to_queue(sender, instance, signal, owners=get_owners(instance, owner_attr))
 		return
@@ -70,12 +70,15 @@ def notify_owner(sender, instance, signal, queue=True, **kwargs):
 		include_reg_ids = []
 
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
-	PushSender().send(owners = owners,
-		exclude_reg_ids = exclude_reg_ids,
-		include_reg_ids = include_reg_ids,
-		payload_alert=payload_alert,
-		data_dict={'type':'update','identifier':identifier},
-		collapse_key="update" if identifier is None else "update_" + identifier)
+	if not testing:
+		PushSender().send(owners = owners,
+			exclude_reg_ids = exclude_reg_ids,
+			include_reg_ids = include_reg_ids,
+			payload_alert=payload_alert,
+			data_dict={'type':'update','identifier':identifier},
+			collapse_key="update" if identifier is None else "update_" + identifier)
+	else:
+		return owners, exclude_reg_ids, include_reg_ids
 
 data = threading.local()
 data.e89_push_queue = None
