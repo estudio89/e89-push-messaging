@@ -144,7 +144,7 @@ class WSPushSender(AbstractPushSender):
 		if type(owners[0]) == type(1):
 			OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
 
-			identifiers = OwnerModel.objects.filter(id__in=owners + include_reg_ids).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
+			identifiers = OwnerModel.objects.filter(id__in=list(owners) + list(include_reg_ids)).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
 		else:
 			if len(include_reg_ids) > 0:
 				OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
