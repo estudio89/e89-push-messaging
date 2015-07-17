@@ -173,7 +173,7 @@ Para funcionamento correto, as seguintes opções devem ser definidas no arquivo
 PushMixin
 ------------------------------------------------------------------------------------------------------------------------
 
-É recomendado que os models que enviarão push messages de update também herdem da classe PusMixin. Essa classe adiciona os seguintes métodos ao objeto:
+Os models que enviarão push messages de update também deverão herdar da classe PusMixin. Essa classe adiciona os seguintes métodos ao objeto:
 
 	- set_exclude_notify(self,registration_id_list):
 		Seta uma lista de registration ids que não deverão ser notificados na próxima vez que o objeto for salvo. É útil para evitar notificar um client que enviou dados que serão salvos no banco mas ao mesmo tempo comunicar outros clients que tenham interesse naquele objeto. Essa lista não é permanente e só será utilizada uma vez quando o objeto for salvo.
@@ -187,3 +187,16 @@ PushMixin
 	- get_notify(self):
 		Retorna o booleano que indica se uma notificação push vai ser enviada ou não ao salvar.
 
+------------------------------------------------------------------------------------------------------------------------
+Testing
+------------------------------------------------------------------------------------------------------------------------
+
+For testing if the right people are receiving push messages, use the function e89_push_messaging.push_tools.mock_push.
+
+Use it in your test cases like this:
+
+	...
+	with mock_push(Model) as receiver:
+        ...
+        self.assertEqual(receiver.notified, set([instance.owner.id]))
+    ...

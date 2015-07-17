@@ -1,2 +1,2 @@
-__VERSION__ = "1.0.4"
+__VERSION__ = "1.0.5"
 default_app_config = 'e89_push_messaging.apps.E89PushMessagingConfig'

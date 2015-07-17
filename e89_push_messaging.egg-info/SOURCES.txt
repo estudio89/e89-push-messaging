@@ -10,6 +10,7 @@ e89_push_messaging/models.py
 e89_push_messaging/push_sender.py
 e89_push_messaging/push_tools.py
 e89_push_messaging/signals.py
+e89_push_messaging/test_tools.py
 e89_push_messaging/urls.py
 e89_push_messaging/views.py
 e89_push_messaging/websockets.py
