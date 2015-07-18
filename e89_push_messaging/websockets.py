@@ -5,7 +5,7 @@ import requests
 import json
 
 def send_message_websockets(owners, data_dict = {'type' : 'update'}):
-	if type(owners[0]) == type(1):
+	if e89_push_messaging.push_tools.is_id(owners[0]):
 		OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
 		owners = OwnerModel.objects.filter(id__in=owners).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
 	else:
