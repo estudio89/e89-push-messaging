@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db.models.signals import pre_delete,post_save
 from django.conf import settings
-
+import e89_push_messaging.push_tools
 import contextlib
 
 @contextlib.contextmanager
@@ -54,7 +54,7 @@ class FakeNotifyOwner(object):
         owners, exclude_reg_ids, include_reg_ids = result
 
         for owner in owners:
-            if type(owner) == type(1):
+            if e89_push_messaging.push_tools.is_id(owner):
                 owner_id = owner
             else:
                 owner_id = owner.id
@@ -62,5 +62,5 @@ class FakeNotifyOwner(object):
                 self.notified.add(owner_id)
 
         for include in include_reg_ids:
-            if type(include) == type(1):
+            if e89_push_messaging.push_tools.is_id(include):
                 self.notified.add(include)

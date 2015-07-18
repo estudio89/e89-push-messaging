@@ -16,10 +16,10 @@ def send_message_ios(owners, data_dict={'type':'update'}, payload_alert=None, ex
     Device = apps.get_model("e89_push_messaging", "Device")
 
     # Verifying if owner id's were passed instead of reg id's
-    if exclude_reg_ids and type(exclude_reg_ids[0]) == type(1):
+    if exclude_reg_ids and e89_push_messaging.push_tools.is_id(exclude_reg_ids[0]):
         exclude_reg_ids = Device.objects.filter(owner_id__in=exclude_reg_ids).values_list('registration_id',flat=True)
 
-    if include_reg_ids and type(include_reg_ids[0]) == type(1):
+    if include_reg_ids and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
         include_reg_ids = Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True)
 
     devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform="ios"),~Q(registration_id__in=exclude_reg_ids)).distinct()

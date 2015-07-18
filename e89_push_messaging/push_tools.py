@@ -35,3 +35,5 @@ def print_console(msg):
     except UnicodeError:
         pass
 
+def is_id(value):
+    return isinstance(value, (int, long))
