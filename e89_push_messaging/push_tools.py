@@ -30,6 +30,9 @@ def deepgetattr(obj, attr):
     return value
 
 def print_console(msg):
+    if not getattr(settings, "PUSH_DEBUG", False):
+        return
+
     try:
         sys.stderr.write(msg + '\n')
     except UnicodeError:
