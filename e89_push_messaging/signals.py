@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from django.db.models.signals import pre_delete,post_save
-from django.db import transaction
-from django.core.signals import request_finished
-from django.dispatch.dispatcher import receiver
 from django.apps import apps
+from django.core.signals import request_finished
+from django.db import transaction
 from django.db.models.query import QuerySet
+from django.db.models.signals import pre_delete,post_save
+from django.dispatch.dispatcher import receiver
 from django.conf import settings
-import e89_push_messaging.push_tools
+from django.template import Template,Context
 from e89_push_messaging.push_sender import PushSender
+import e89_push_messaging.push_tools
 import sys
 import threading
 
@@ -53,14 +54,20 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 		add_to_queue(sender, instance, signal, owners=get_owners(instance, owner_attr))
 		return
 
-	# Buscando parâmetro do sender que representa o owner
+	# Finding owner
+	owners = kwargs.get("owners", get_owners(instance, owner_attr))
+
+	# Checking if payload alert should be sent
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
-	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
 	if instance.get_ignore_alert() or signal == pre_delete:
 		payload_alert = None
 
-	# Buscando owner
-	owners = kwargs.get("owners", get_owners(instance, owner_attr))
+	# Processing payload alert
+	if payload_alert is not None:
+		payload_alert = Template(payload_alert).render(Context({"instance": instance}))
+
+	# Getting push identifier
+	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
 
 	try:
 		exclude_reg_ids = instance.get_exclude_notify()
@@ -70,6 +77,7 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 		include_reg_ids = []
 
 	e89_push_messaging.push_tools.print_console('Enviando push. Exclude = ' + str(exclude_reg_ids))
+
 	if not testing:
 		PushSender().send(owners = owners,
 			exclude_reg_ids = exclude_reg_ids,

@@ -141,12 +141,20 @@ class WSPushSender(AbstractPushSender):
 		if len(owners) == 0 and len(include_reg_ids) == 0:
 			return []
 
+		owners = list(owners)
 		if e89_push_messaging.push_tools.is_id(owners[0]):
 			OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
 
-			identifiers = OwnerModel.objects.filter(id__in=list(owners) + list(include_reg_ids)).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
+			owner_ids = list(owners)
+			if len(include_reg_ids) > 0 and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
+				owner_ids += list(include_reg_ids)
+
+			if len(exclude_reg_ids) >0 and (type(exclude_reg_ids[0]) == type(u'') or type(exclude_reg_ids[0]) == type('')):
+				exclude_reg_ids = []
+
+			identifiers = OwnerModel.objects.filter(id__in=owner_ids).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
 		else:
-			if len(include_reg_ids) > 0:
+			if len(include_reg_ids) > 0 and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
 				OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
 				more_owners = OwnerModel.objects.filter(id__in=include_reg_ids)
 				owners += list(more_owners)
