@@ -25,23 +25,29 @@ def mock_push(Model):
 
     if send_on_save:
         post_save.disconnect(notify_owner, Model)
-        post_save.connect(fake_receiver, sender=Model)
+        post_save.connect(fake_receiver, sender=Model, dispatch_uid="fake_receiver")
 
     old_method = Model.notify_owners
     mock_method = lambda self: fake_receiver(self._meta.model, self, None)
     Model.notify_owners = mock_method
-    yield fake_receiver
-    pre_delete.disconnect(fake_receiver, Model)
-    pre_delete.connect(notify_owner, sender=Model)
 
-    if send_on_save:
-        post_save.disconnect(fake_receiver, Model)
-        post_save.connect(notify_owner, sender=Model)
-    Model.notify_owners = old_method
+    try:
+        yield fake_receiver
+    finally:
+        pre_delete.disconnect(fake_receiver, Model, dispatch_uid="fake_receiver")
+        pre_delete.connect(notify_owner, sender=Model)
+
+        if send_on_save:
+            post_save.disconnect(fake_receiver, Model, dispatch_uid="fake_receiver")
+            post_save.connect(notify_owner, sender=Model)
+        Model.notify_owners = old_method
 
 class FakeNotifyOwner(object):
     def __init__(self):
         self.notified = set()
+        self.exclude_reg_ids = set()
+        self.owners_ignore_payload = []
+        self.payload_alert = None
 
     def __call__(self, sender, instance, signal, **kwargs):
         from signals import notify_owner
@@ -51,7 +57,7 @@ class FakeNotifyOwner(object):
         if result is None:
             # Push was not sent
             return
-        owners, exclude_reg_ids, include_reg_ids = result
+        owners, exclude_reg_ids, include_reg_ids, owners_ignore_payload, payload_alert = result
 
         for owner in owners:
             if e89_push_messaging.push_tools.is_id(owner):
@@ -64,3 +70,8 @@ class FakeNotifyOwner(object):
         for include in include_reg_ids:
             if e89_push_messaging.push_tools.is_id(include):
                 self.notified.add(include)
+
+        self.exclude_reg_ids = exclude_reg_ids
+        self.include_reg_ids = include_reg_ids
+        self.owners_ignore_payload = owners_ignore_payload
+        self.payload_alert = payload_alert

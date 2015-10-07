@@ -89,6 +89,30 @@ class iOSPushSender(MobilePushSender):
 	def _get_url(self):
 		return (settings.PUSH_SERVER_INTERNAL_URL + '/push/send/apns/').replace('//push', '/push')
 
+	def _get_identifiers(self, owners, exclude_reg_ids=[], include_reg_ids=[], **kwargs):
+		'''
+			PARAMS:
+				- get_ignored_owners: The boolean kwarg "get_ignored_owners" is used internally in order to know if the identifiers that
+				are being fetched are only from the owners that should be ignored when sending a payload alert.
+
+				This is used when sending a separate push message only to the owners that should not get a payload_alert.
+
+				- owners_ignore_payload: this should always be a list. It contains owner ids that should not receive a payload alert.
+
+				- payload_alert: String or None. This is the string that will be sent in the push alert text.'''
+
+		get_ignored_owners = kwargs.pop("get_ignored_owners", False)
+		owners_ignore_payload = kwargs.pop("owners_ignore_payload", [])
+		payload_alert = kwargs.pop("payload_alert", None)
+		if not get_ignored_owners:
+			if len(owners_ignore_payload) > 0 and payload_alert:
+				exclude_reg_ids.extend(owners_ignore_payload)
+
+			return super(iOSPushSender, self)._get_identifiers(owners, exclude_reg_ids, include_reg_ids, **kwargs)
+		else:
+			owners = owners_ignore_payload
+			return super(iOSPushSender, self)._get_identifiers(owners, exclude_reg_ids=[], include_reg_ids=[], **kwargs)
+
 	def _get_data(self, **kwargs):
 		payload_alert = kwargs.pop("payload_alert", None)
 		badge = 1 if payload_alert else None
@@ -112,6 +136,20 @@ class iOSPushSender(MobilePushSender):
 			"alert": payload_alert,
 		}
 		return data
+
+
+	def send(self, **kwargs):
+
+		# First time: sending to everyone that should receive a payload alert
+		super(iOSPushSender, self).send(**kwargs)
+
+		# Second time: sending to everyone that should not receive a payload alert
+		owners_ignore_payload = kwargs.get("owners_ignore_payload", [])
+		payload_alert = kwargs.pop("payload_alert", None)
+		if len(owners_ignore_payload) > 0 and payload_alert:
+			kwargs["payload_alert"] = None
+			kwargs["get_ignored_owners"] = True
+			super(iOSPushSender, self).send(**kwargs)
 
 
 class AndroidPushSender(MobilePushSender):
