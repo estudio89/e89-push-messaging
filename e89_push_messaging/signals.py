@@ -59,8 +59,17 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 
 	# Checking if payload alert should be sent
 	payload_alert = settings.PUSH_MODELS[app_model].get("payload_alert", None)
-	if instance.get_ignore_alert() or signal == pre_delete:
+	owners_ignore_payload = [] # list of owners that should not receive payload alert
+	ignore_alert = instance.get_ignore_alert()
+	if signal == pre_delete:
 		payload_alert = None
+	elif ignore_alert:
+		if type(ignore_alert) == type([]): # list of owners that should not receive payload alert
+			owners_ignore_payload = ignore_alert
+		else:
+			# payload should not be sent to anyone
+			payload_alert = None
+
 
 	# Processing payload alert
 	if payload_alert is not None:
@@ -82,11 +91,12 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 		PushSender().send(owners = owners,
 			exclude_reg_ids = exclude_reg_ids,
 			include_reg_ids = include_reg_ids,
+			owners_ignore_payload = owners_ignore_payload,
 			payload_alert=payload_alert,
 			data_dict={'type':'update','identifier':identifier},
 			collapse_key="update" if identifier is None else "update_" + identifier)
 	else:
-		return owners, exclude_reg_ids, include_reg_ids
+		return owners, exclude_reg_ids, include_reg_ids, owners_ignore_payload, payload_alert
 
 data = threading.local()
 data.e89_push_queue = None
