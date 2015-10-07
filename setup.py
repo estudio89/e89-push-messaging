@@ -11,7 +11,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='e89-push-messaging',
-    version='1.0.11',
+    version='1.0.12',
     packages=['e89_push_messaging'],
     include_package_data=True,
     license='BSD License',  # example license
