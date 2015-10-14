@@ -12,7 +12,8 @@ import json
 
 
 @csrf_exempt
-def register_device(request):
+@e89_security.tools.secure_view(encryption_key=getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), encryption_active=getattr(settings, "SYNC_ENCRYPTION", False))
+def register_device(request, data):
     ''' View para registro do device no Google Cloud Messaging. Deve ser chamada logo após a autenticação.
         Deve receber um json no formato:
         {
@@ -21,20 +22,16 @@ def register_device(request):
             "old_registration_id":"ASDasda!@d"
         }
     '''
-    if request.method != 'POST':
-        return HttpResponse("")
 
-    json_obj = e89_security.tools._get_user_data(request, getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), getattr(settings, "SYNC_ENCRYPTION", False))
-
-    old_registration_id = json_obj.get('old_registration_id')
-    registration_id = json_obj['registration_id']
-    platform = json_obj['platform']
+    old_registration_id = data.get('old_registration_id')
+    registration_id = data['registration_id']
+    platform = data['platform']
 
     Owner = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
 
     json_identifier = settings.PUSH_DEVICE_OWNER_IDENTIFIER.split('__')[-1]
-    kwargs =  {settings.PUSH_DEVICE_OWNER_IDENTIFIER:json_obj[json_identifier]}
+    kwargs =  {settings.PUSH_DEVICE_OWNER_IDENTIFIER:data[json_identifier]}
     owner = get_object_or_404(Owner,**kwargs)
     e89_push_messaging.push_tools.register_device(owner, registration_id, old_registration_id, platform)
 
-    return e89_security.tools._generate_user_response({}, getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), getattr(settings, "SYNC_ENCRYPTION", False))
+    return {}
