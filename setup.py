@@ -11,8 +11,8 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='e89-push-messaging',
-    version='1.0.13',
-    packages=['e89_push_messaging'],
+    version='1.0.14',
+    packages=['e89_push_messaging', 'e89_push_messaging.migrations'],
     include_package_data=True,
     license='BSD License',  # example license
     description='Aplicação para envio de notificações push - Estúdio 89.',
