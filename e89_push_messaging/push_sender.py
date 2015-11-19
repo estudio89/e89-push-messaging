@@ -100,6 +100,17 @@ class MobilePushSender(AbstractPushSender):
 		registration_ids = list(devices.values_list("registration_id",flat=True))
 		return registration_ids
 
+	def process_response(self, data):
+		Device = apps.get_model('e89_push_messaging','Device')
+		toDelete = data.get("toDelete", [])
+
+		Device.objects.filter(registration_id__in=toDelete).delete()
+		for toChange in data.get("shouldChange",[]):
+			dev = Device.objects.filter(registration_id=toChange["old"]).first()
+			if dev is not None:
+				dev.registration_id = toChange["new"]
+				dev.save()
+
 class iOSPushSender(MobilePushSender):
 	def _get_platform(self):
 		return "ios"
@@ -186,18 +197,6 @@ class AndroidPushSender(MobilePushSender):
 			"apiKey": settings.GCM_API_KEY
 		}
 		return data
-
-	def process_response(self, data):
-		Device = apps.get_model('e89_push_messaging','Device')
-		toDelete = data["toDelete"]
-
-		Device.objects.filter(registration_id__in=toDelete).delete()
-		for toChange in data["shouldChange"]:
-			dev = Device.objects.filter(registration_id=toChange["old"]).first()
-			if dev is not None:
-				dev.registration_id = toChange["new"]
-				dev.save()
-
 
 class WSPushSender(AbstractPushSender):
 
