@@ -36,3 +36,16 @@ def register_device(request, data):
     e89_push_messaging.push_tools.register_device(owner, registration_id, old_registration_id, platform, app_version)
 
     return {}
+
+@csrf_exempt
+def process_results(request, platform):
+    if request.method != "POST":
+        raise Http404
+    try:
+        data = json.loads(request.body)
+    except:
+        raise Http404
+
+    from e89_push_messaging.push_sender import PushSender
+    PushSender().process_response(platform, data)
+    return HttpResponse("{}")

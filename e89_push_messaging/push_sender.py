@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.db.models import Q
 from django.apps import apps
+from django.core.urlresolvers import reverse
+from django.apps import apps
 import e89_push_messaging.push_tools
+import e89_push_messaging.views
 import requests
 import json
 
@@ -21,7 +24,11 @@ class PushSender(object):
 	def send(self, **kwargs):
 		for platform in self.platforms:
 			Sender = self.get_sender(platform)
-			Sender.send(**kwargs)
+			Sender.send(platform=platform, **kwargs)
+
+	def process_response(self, platform, response):
+		Sender = self.get_sender(platform)
+		Sender.process_response(response)
 
 class AbstractPushSender(object):
 	def _get_url(self):
@@ -33,7 +40,7 @@ class AbstractPushSender(object):
 	def _get_data(self, **kwargs):
 		raise NotImplementedError()
 
-	def send(self, **kwargs):
+	def send(self, platform, **kwargs):
 		''' Parameters:
 
 				owners
@@ -52,12 +59,23 @@ class AbstractPushSender(object):
 		}
 
 		data.update(self._get_data(**kwargs))
-		self.post_to_server(data)
+		self.post_to_server(data, platform)
 
-	def post_to_server(self, data):
+	def post_to_server(self, data, platform):
+		from urlparse import urlparse
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+		domain = urlparse(settings.WEBSITE_DOMAIN)
+
+		data["processResponse"] = {
+			"host": domain.hostname,
+			"port": domain.port if domain.port is not None else "80",
+			"path": reverse(e89_push_messaging.views.process_results, kwargs={"platform":platform})
+		}
 		url = self._get_url()
 		requests.post(url,data=json.dumps(data), headers=headers)
+
+	def process_response(self, data):
+		pass
 
 class MobilePushSender(AbstractPushSender):
 
@@ -168,6 +186,18 @@ class AndroidPushSender(MobilePushSender):
 			"apiKey": settings.GCM_API_KEY
 		}
 		return data
+
+	def process_response(self, data):
+		Device = apps.get_model('e89_push_messaging','Device')
+		toDelete = data["toDelete"]
+
+		Device.objects.filter(registration_id__in=toDelete).delete()
+		for toChange in data["shouldChange"]:
+			dev = Device.objects.filter(registration_id=toChange["old"]).first()
+			if dev is not None:
+				dev.registration_id = toChange["new"]
+				dev.save()
+
 
 class WSPushSender(AbstractPushSender):
 
