@@ -19,3 +19,6 @@ e89_push_messaging.egg-info/SOURCES.txt
 e89_push_messaging.egg-info/dependency_links.txt
 e89_push_messaging.egg-info/requires.txt
 e89_push_messaging.egg-info/top_level.txt
+e89_push_messaging/migrations/0001_initial.py
+e89_push_messaging/migrations/0002_platform.py
+e89_push_messaging/migrations/__init__.py
