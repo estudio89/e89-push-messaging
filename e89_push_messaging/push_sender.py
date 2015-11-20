@@ -107,7 +107,7 @@ class MobilePushSender(AbstractPushSender):
 		Device.objects.filter(registration_id__in=toDelete).delete()
 		for toChange in data.get("shouldChange",[]):
 			dev = Device.objects.filter(registration_id=toChange["old"]).first()
-			if dev is not None:
+			if dev is not None and not Device.objects.filter(registration_id=toChange["new"]).exists():
 				dev.registration_id = toChange["new"]
 				dev.save()
 
