@@ -133,6 +133,7 @@ class iOSPushSender(MobilePushSender):
 		get_ignored_owners = kwargs.pop("get_ignored_owners", False)
 		owners_ignore_payload = kwargs.pop("owners_ignore_payload", [])
 		payload_alert = kwargs.pop("payload_alert", None)
+		exclude_reg_ids = exclude_reg_ids[:]
 		if not get_ignored_owners:
 			if len(owners_ignore_payload) > 0 and payload_alert:
 				exclude_reg_ids.extend(owners_ignore_payload)
