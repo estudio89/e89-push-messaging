@@ -5,17 +5,17 @@ class PushMixin(object):
 
 	def set_include_notify(self, registration_id_list):
 		''' Recebe uma lista de registration id's adicionais que devem receber notificação push.'''
-		self.include_notify = list(registration_id_list)
+		self.include_notify = [i for i in list(registration_id_list) if i is not None]
 
 	def set_exclude_notify(self,registration_id_list):
 		''' Recebe uma lista de registration id's que não devem receber notificação push.'''
-		self.exclude_notify = list(registration_id_list)
+		self.exclude_notify = [i for i in list(registration_id_list) if i is not None]
 
 	def set_ignore_alert(self, owner_ids=[]):
 		if not owner_ids:
 			self.ignore_alert = True
 		else:
-			self.ignore_alert = list(owner_ids)
+			self.ignore_alert = [i for i in list(owner_ids) if i is not None]
 
 	def get_ignore_alert(self):
 		if not hasattr(self, 'ignore_alert'):

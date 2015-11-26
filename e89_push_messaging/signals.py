@@ -51,7 +51,7 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 
 	if queue and not testing:
 		# Code is being run inside a transaction. Add to queue
-		add_to_queue(sender, instance, signal, owners=get_owners(instance, owner_attr))
+		add_to_queue(sender, instance, signal, owners=kwargs.get("owners", get_owners(instance, owner_attr)))
 		return
 
 	# Finding owner
