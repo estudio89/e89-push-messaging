@@ -73,7 +73,7 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 
 	# Processing payload alert
 	if payload_alert is not None:
-		payload_alert = Template(payload_alert).render(Context({"instance": instance}))
+		payload_alert = Template(payload_alert).render(Context({"instance": instance}, autoescape=False))
 
 	# Getting push identifier
 	identifier = settings.PUSH_MODELS[app_model].get("identifier", None)
