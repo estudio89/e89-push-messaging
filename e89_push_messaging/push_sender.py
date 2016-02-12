@@ -90,11 +90,21 @@ class MobilePushSender(AbstractPushSender):
 		Device = apps.get_model("e89_push_messaging", "Device")
 
 		# Verifying if owner id's were passed instead of reg id's
-		if exclude_reg_ids and e89_push_messaging.push_tools.is_id(exclude_reg_ids[0]):
-		    exclude_reg_ids = Device.objects.filter(owner_id__in=exclude_reg_ids).values_list('registration_id',flat=True)
+		exclude_owner_ids = []
+		if exclude_reg_ids:
+			exclude_owner_ids = [val for val in exclude_reg_ids if e89_push_messaging.push_tools.is_id(val)]
+			exclude_reg_ids = filter(lambda val: val not in exclude_owner_ids, exclude_reg_ids)
 
-		if include_reg_ids and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
-		    include_reg_ids = Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True)
+		if exclude_owner_ids:
+		    exclude_reg_ids.extend(Device.objects.filter(owner_id__in=exclude_owner_ids).values_list('registration_id',flat=True))
+
+		include_owner_ids = []
+		if include_reg_ids:
+			include_owner_ids = [val for val in include_reg_ids if e89_push_messaging.push_tools.is_id(val)]
+			include_reg_ids = filter(lambda val: val not in include_owner_ids, include_reg_ids)
+
+		if include_owner_ids:
+		    include_reg_ids.extend(Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True))
 
 		devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform=self._get_platform()),~Q(registration_id__in=exclude_reg_ids)).distinct()
 		registration_ids = list(devices.values_list("registration_id",flat=True))
