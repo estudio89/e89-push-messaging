@@ -12,6 +12,7 @@ from e89_push_messaging.push_sender import PushSender
 import e89_push_messaging.push_tools
 import sys
 import threading
+import copy
 
 def should_send_push(instance):
 	# Verificando se é necessário o envio de push
@@ -100,21 +101,34 @@ def notify_owner(sender, instance, signal, queue=True, testing=False, **kwargs):
 
 data = threading.local()
 data.e89_push_queue = None
+data.connection_data = None
 
 def add_to_queue(sender, instance, signal=None, owners=[], **kwargs):
 	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
 		data.e89_push_queue = set([])
 
 	data.e89_push_queue.add((sender, instance, signal, tuple(owners)))
+
+	from django.db import connection
+	if hasattr(connection, "threadlocal"):
+		data.connection_data = copy.deepcopy(connection.threadlocal.__dict__)
+
 	return
 
 def process_queue(sender, **kwargs):
 	if not hasattr(data, "e89_push_queue") or data.e89_push_queue is None:
 		return
 
+	from django.db import connection
+	if data.connection_data is not None and hasattr(connection, "threadlocal"):
+		for attr,value in data.connection_data.iteritems():
+			setattr(connection.threadlocal, attr, value)
+
 	for sender,instance,signal,owners in data.e89_push_queue:
 		notify_owner(sender, instance, signal, queue=False, owners=owners)
+
 	data.e89_push_queue = None
+	data.connection_data = None
 
 def connect_signals():
 	# Connecting signals to model events
