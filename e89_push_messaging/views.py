@@ -12,7 +12,7 @@ import json
 
 
 @csrf_exempt
-@e89_security.tools.secure_view(encryption_key=getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), encryption_active=getattr(settings, "SYNC_ENCRYPTION", False))
+@e89_security.tools.secure_view(encryption_key=lambda: getattr(settings, "SYNC_ENCRYPTION_PASSWORD", ""), encryption_active=lambda: getattr(settings, "SYNC_ENCRYPTION", False))
 def register_device(request, data):
     ''' View para registro do device no Google Cloud Messaging. Deve ser chamada logo após a autenticação.
         Deve receber um json no formato:
