@@ -5,7 +5,9 @@ from django.db import models, migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = []
+    dependencies = [
+        (settings.PUSH_DEVICE_OWNER_MODEL.split(".")[0], "0001_initial")
+    ]
 
     operations = [
         migrations.CreateModel(
