@@ -120,7 +120,7 @@ def process_queue(sender, **kwargs):
 		return
 
 	from django.db import connection
-	if data.connection_data is not None and hasattr(connection, "threadlocal"):
+	if hasattr(data, "connection_data") and data.connection_data is not None and hasattr(connection, "threadlocal"):
 		for attr,value in data.connection_data.iteritems():
 			setattr(connection.threadlocal, attr, value)
 
