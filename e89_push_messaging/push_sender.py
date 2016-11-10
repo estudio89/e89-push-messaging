@@ -66,9 +66,16 @@ class AbstractPushSender(object):
 		headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 		domain = urlparse(settings.WEBSITE_DOMAIN)
 
+		if domain.port:
+			port = domain.port
+		elif domain.scheme == "https":
+			port = "443"
+		else:
+			port = "80"
+
 		data["processResponse"] = {
 			"host": domain.hostname,
-			"port": domain.port if domain.port is not None else "80",
+			"port": port,
 			"path": reverse(e89_push_messaging.views.process_results, kwargs={"platform":platform})
 		}
 		url = self._get_url()
