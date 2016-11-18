@@ -1,8 +1,7 @@
-from django.conf.urls import patterns, include, url
-
-urlpatterns = patterns('e89_push_messaging.views',
-
-    (r'^push_messaging/register-device/', 'register_device'),
-    (r'^push_messaging/(?P<platform>\w+)/process-results/', 'process_results'),
-)
+from django.conf.urls import url
+import e89_push_messaging.views
+urlpatterns = [
+    url(r'^push_messaging/register-device/', e89_push_messaging.views.register_device),
+    url(r'^push_messaging/(?P<platform>\w+)/process-results/', e89_push_messaging.views.process_results),
+]
 
