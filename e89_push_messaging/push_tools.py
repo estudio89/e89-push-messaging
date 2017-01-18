@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.utils import timezone
 from django.apps import apps
+from django.db import IntegrityError
 import urllib2,json,time
 import datetime as dt
 import logging
@@ -20,7 +21,12 @@ def register_device(owner, registration_id, old_registration_id, platform, app_v
     Device = apps.get_model("e89_push_messaging", "Device")
     if not old_registration_id:
         old_registration_id = registration_id
-    device = Device.objects.update_or_create(registration_id=old_registration_id, platform=platform, defaults={"owner":owner, "registration_id":registration_id, "version":app_version})
+
+    try:
+        device = Device.objects.update_or_create(registration_id=old_registration_id, platform=platform, defaults={"owner":owner, "registration_id":registration_id, "version":app_version})
+    except IntegrityError as e:
+        if not Device.objects.filter(registration_id=registration_id, platform=platform, owner=owner, version=app_version).exists():
+            raise
 
 def deepgetattr(obj, attr):
     """Recurses through an attribute chain to get the ultimate value."""
