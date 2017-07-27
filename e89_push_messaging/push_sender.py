@@ -90,8 +90,6 @@ class MobilePushSender(AbstractPushSender):
 		raise NotImplementedError()
 
 	def _get_identifiers(self, owners, exclude_reg_ids=[], include_reg_ids=[], **kwargs):
-		if len(owners) == 0:
-			return []
 
 		# Looking for devices
 		Device = apps.get_model("e89_push_messaging", "Device")
@@ -111,7 +109,7 @@ class MobilePushSender(AbstractPushSender):
 			include_reg_ids = filter(lambda val: val not in include_owner_ids, include_reg_ids)
 
 		if include_owner_ids:
-		    include_reg_ids.extend(Device.objects.filter(owner_id__in=include_reg_ids).values_list('registration_id',flat=True))
+		    include_reg_ids.extend(Device.objects.filter(owner_id__in=include_owner_ids).values_list('registration_id',flat=True))
 
 		devices = Device.objects.filter(Q(owner__in=owners) | Q(registration_id__in=include_reg_ids),Q(platform=self._get_platform()),~Q(registration_id__in=exclude_reg_ids)).distinct()
 		registration_ids = list(devices.values_list("registration_id",flat=True))
