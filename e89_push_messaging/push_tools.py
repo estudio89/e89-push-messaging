@@ -11,6 +11,8 @@ import e89_push_messaging.android
 import e89_push_messaging.ios
 import e89_push_messaging.websockets
 
+LOGGER = logging.getLogger(__name__)
+
 def send_message(owners, exclude_reg_ids=[], include_reg_ids=[], data_dict = {'type':'update'}, payload_alert=None, collapse_key="update"):
     e89_push_messaging.android.send_message_android(owners, exclude_reg_ids = exclude_reg_ids,include_reg_ids = include_reg_ids, data_dict = data_dict, collapse_key=collapse_key)
     e89_push_messaging.ios.send_message_ios(owners, exclude_reg_ids = exclude_reg_ids, include_reg_ids = include_reg_ids, data_dict = data_dict, payload_alert = payload_alert)
@@ -40,7 +42,7 @@ def print_console(msg):
         return
 
     try:
-        sys.stderr.write(msg + '\n')
+        LOGGER.info(msg)
     except UnicodeError:
         pass
 
