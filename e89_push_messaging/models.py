@@ -11,6 +11,7 @@ class Device(models.Model):
 
 	class Meta:
 		unique_together = (("registration_id", "platform"),)
+		ordering = [getattr(settings, 'PUSH_DEVICE_ORDERING', 'id')]
 
 	def __unicode__(self):
 		return '%s: %s - %s'%(self.platform,str(self.version), self.registration_id)
