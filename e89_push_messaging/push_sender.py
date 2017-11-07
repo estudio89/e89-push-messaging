@@ -227,6 +227,7 @@ class WSPushSender(AbstractPushSender):
 		owners = list(owners)
 		if e89_push_messaging.push_tools.is_id(owners[0]):
 			OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
+			Device = apps.get_model("e89_push_messaging", "Device")
 
 			owner_ids = list(owners)
 			if len(include_reg_ids) > 0 and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
@@ -236,6 +237,10 @@ class WSPushSender(AbstractPushSender):
 				exclude_reg_ids = []
 
 			identifiers = OwnerModel.objects.filter(id__in=owner_ids).exclude(id__in=exclude_reg_ids).values_list(settings.PUSH_DEVICE_OWNER_IDENTIFIER, flat=True)
+			ordering = Device._meta.ordering[0]
+
+			if 'owner' in ordering:
+				identifiers = identifiers.order_by(ordering.replace('owner__', ''))
 		else:
 			if len(include_reg_ids) > 0 and e89_push_messaging.push_tools.is_id(include_reg_ids[0]):
 				OwnerModel = apps.get_model(settings.PUSH_DEVICE_OWNER_MODEL)
