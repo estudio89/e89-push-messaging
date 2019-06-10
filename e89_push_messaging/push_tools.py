@@ -27,8 +27,12 @@ def register_device(owner, registration_id, old_registration_id, platform, app_v
     try:
         device = Device.objects.update_or_create(registration_id=old_registration_id, platform=platform, defaults={"owner":owner, "registration_id":registration_id, "version":app_version})
     except IntegrityError as e:
-        if not Device.objects.filter(registration_id=registration_id, platform=platform, owner=owner, version=app_version).exists():
+        if not Device.objects.filter(registration_id=registration_id, platform=platform, owner=owner).exists():
             raise
+        else:
+            device = Device.objects.filter(registration_id=registration_id, platform=platform, owner=owner).first()
+            device.version = app_version
+            device.save()
 
 def deepgetattr(obj, attr):
     """Recurses through an attribute chain to get the ultimate value."""

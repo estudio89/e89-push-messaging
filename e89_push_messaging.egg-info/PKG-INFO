@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: e89-push-messaging
-Version: 1.0.29
+Version: 1.0.30
 Summary: Aplicação para envio de notificações push - Estúdio 89.
 Home-page: http://www.estudio89.com.br/
 Author: Luccas Correa
@@ -208,6 +208,12 @@ Description: ===================================================================
                 ...
                 self.assertEqual(receiver.notified, set([instance.owner.id]))
             ...
+        
+        
+        
+        To build the library, run:
+        
+        python setup.py sdist
         
 Platform: UNKNOWN
 Classifier: Environment :: Web Environment

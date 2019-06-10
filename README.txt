@@ -200,3 +200,9 @@ Use it in your test cases like this:
         ...
         self.assertEqual(receiver.notified, set([instance.owner.id]))
     ...
+
+
+
+To build the library, run:
+
+python setup.py sdist
