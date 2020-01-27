@@ -207,8 +207,16 @@ class AndroidPushSender(MobilePushSender):
 	def _get_data(self, **kwargs):
 		payload = kwargs.pop("data_dict", {'type':'update'})
 		collapse_key=kwargs.pop("collapse_key", "update")
+		payload_alert=kwargs.pop("payload_alert", None)
+		title = None
+		description = None
+		if payload_alert:
+			title, description = payload_alert.split("\n")
+
 		data = {
 			"payload": payload,
+			"title": title,
+			"description": description,
 			"collapseKey": collapse_key,
 			"apiKey": settings.GCM_API_KEY
 		}
