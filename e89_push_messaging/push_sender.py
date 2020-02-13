@@ -211,7 +211,10 @@ class AndroidPushSender(MobilePushSender):
 		title = None
 		description = None
 		if payload_alert:
-			title, description = payload_alert.split("\n")
+			if "\n" in payload_alert:
+				title, description = payload_alert.split("\n")
+			else:
+				title, description = "", payload_alert
 
 		data = {
 			"payload": payload,
